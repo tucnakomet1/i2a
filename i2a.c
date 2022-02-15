@@ -2,11 +2,16 @@
 #include <math.h>
 #include <sys/stat.h>
 #include <stdbool.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
 #define ASCII "M@#W$BG5E20Tbca?1!;:+=-,._` "
+#define ASCII_full "M$@WB%8&#Z0OQLCXYUJhkbdpqoawmzcvunxrjft/\\?*-_+~<>1i!lI|;:,\"^`'. "
+#define ASCII_low "M$&#x=+;-'`. "
+#define ASCII_real "███▓▓▒░░  "
 
 
 typedef struct {
@@ -18,7 +23,7 @@ typedef struct {
 // all functions and classes
 Image loadImage(const char *file_path);
 int load(const char *file);
-int ascii_list_size = sizeof(ASCII) - 2;
+int ascii_list_size = sizeof(ASCII_full) - 2;
 
 // main image class → load image and define data
 Image loadImage(const char *file_path) {
@@ -72,10 +77,10 @@ int load(const char *file) {
     }
 
 
-    for (int i = 0; i < w; i++) {
+    for (int i = 0; i < h; i++) {
         char str[302] = "";
 
-        for (int j = 0; j < h; j++) {
+        for (int j = 0; j < w; j++) {
             //printf("\nI:%d, J:%d", i, j);
             
             int r = img.data[i][j];
@@ -85,7 +90,8 @@ int load(const char *file) {
             //printf("\ntry: R: %d, G: %d, B: %d\n", r, g, b);
 
             int avg = count_average(r, g, b);
-            int ascii_char = ASCII[avg];
+            //int ascii_char = ASCII[avg];
+            int ascii_char = ASCII_full[avg];
 
             strncat(str, &ascii_char, 1);
         }
@@ -102,22 +108,41 @@ int main() {
     const char *file;
     struct stat sb;
 
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+
+    printf ("lines %d\n", w.ws_row);
+    printf ("columns %d\n", w.ws_col);
+
     //file = "/home/tucna/Plocha/i2a/red.jpg";
     //file = "/home/tucna/Plocha/i2a/black.png";
     //file = "/home/tucna/Plocha/i2a/white.png";
     //file = "/home/tucna/Plocha/square.jpg";
-    //file = "/home/tucna/Plocha/circle.jpg";
-    file = "/home/tucna/Plocha/man.jpg";
+    file = "/home/tucna/Plocha/i2a/inputs/circle.jpg";
+    //file = "/home/tucna/Plocha/i2a/inputs/man.jpg";
 
 
 
-    // if path → run process; else → input file again
+
+    //if path → run process; else → input file again
     if (stat(file, &sb) == 0 && S_ISREG(sb.st_mode)) {
         load(file);
     } else {
         printf("\nWrong file path! Try it again...\n");
-        main();
+        printf("Path: %s - does not exist", file);
+	main();
     }
     
     return 0;
 }
+
+
+/* TODO:
+ * - resize image by window size
+ * - show full image, not just half
+ * - add argparse
+ * - options of ascii list
+ * - save to file
+ * - make video
+ * - add about → version, url
+ */
