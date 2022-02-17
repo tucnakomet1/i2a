@@ -1,5 +1,4 @@
-inputs
-build
-tut
 .vscode
-run.sh
+build
+inputs
+i2a

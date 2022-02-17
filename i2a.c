@@ -14,7 +14,7 @@
 
 #define ASCII_less "M$&#x=+;-'`. "
 #define ASCII "M@#W$BG5E20Tbca?1!;:+=-,._` "
-#define ASCII_more "M$@WB%8&#Z0OQLCXYUJhkbdpqoawmzcvunxrjft/\\?*-_+~<>1i!lI|;:,\"^`'. "
+#define ASCII_more "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
 
 
 // argparse info
@@ -50,7 +50,7 @@ Image loadImage(const char *file_path) {
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w); 
     
-    int window_width = w.ws_col;
+    int window_width = (w.ws_col)/2;
 
     // resizing the image
     if (window_width < width) {
@@ -147,8 +147,8 @@ int load(const char *file) {
                 ascii_char = ASCII_more[avg];
             }
 
-            printf("%c", ascii_char);
-            if (file_option == 1) { fprintf(fp, "%c", ascii_char); }
+            printf("%c%c", ascii_char, ascii_char);
+            if (file_option == 1) { fprintf(fp, "%c%c", ascii_char, ascii_char); }
 
         }
         printf("\r\n");
@@ -213,7 +213,6 @@ int main(int argc, const char **argv) {
       
 
     // check for path
-    struct stat sb;
 
     if (stat(file, &sb) == 0 && S_ISREG(sb.st_mode)) {
         load(file);
