@@ -1,6 +1,6 @@
 # i2a
 
-<a href="images/icon.png"><img src="images/icon.png" alt="info"  style="max-width:17%;" align="left" hspace="17">***Image to Ascii*** converter created in C. Allows you to generate an ascii from any image and print it to a terminal or text file.  Supported formats are `png`, `jpg` and `bmp`. The project is created using the [stb library](https://github.com/nothings/stb). 
+<a href="images/icon.png"><img src="images/icon.png" alt="info"  style="max-width:17%;" align="left" hspace="17"></a>***Image to Ascii*** converter created in C. Allows you to generate an ascii from any image and print it to a terminal or text file.  Supported formats are `png`, `jpg` and `bmp`. The project is created using the [stb library](https://github.com/nothings/stb). 
 
 <br><br>
 
