@@ -1,6 +1,6 @@
 # i2a
 
-<a href="images/icon.png"><img src="images/icon.png" alt="info"  style="max-width:17%;" align="left" hspace="17">***Image to Ascii*** converter created in C. Allows you to generate an ascii from any image and print it to a terminal or text file.  Supported formats are `png`, `jpg` and `bmp`. The project is created using the [stb library](https://github.com/nothings/stb). 
+<a href="images/icon.png"><img src="images/icon.png" alt="info"  style="max-width:17%;" align="left" hspace="17"></a>***Image to Ascii*** converter created in C. Allows you to generate an ascii from any image and print it to a terminal or text file.  Supported formats are `png`, `jpg` and `bmp`. The project is created using the [stb library](https://github.com/nothings/stb). 
 
 <br><br>
 
@@ -9,10 +9,10 @@
 ## Installation
 ```bash
 # download package from github
-wget -c https://github.com/tucnakomet1/i2a/archive/refs/tags/0.0.2.tar.gz -O i2a-v0.0.2.tar.gz
+wget -c https://github.com/tucnakomet1/i2a/archive/refs/tags/0.0.3.tar.gz -O i2a-v0.0.3.tar.gz
 
 # extract tarball & go to the directory
-tar -xvzf i2a-v0.0.2.tar.gz && cd i2a-0.0.2
+tar -xvzf i2a-v0.0.3.tar.gz && cd i2a-0.0.3
 
 # install package
 make && sudo cp i2a /usr/local/bin/
