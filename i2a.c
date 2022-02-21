@@ -13,15 +13,24 @@
 #include "stb/stb_image_resize.h"
 
 #define ASCII_less "M$&#x=+;-'`. "
+#define ASCII_less_reverse " .`'-;+=x#&$M"
 #define ASCII "M@#W$BG5E20Tbca?1!;:+=-,._` "
+#define ASCII_reverse " `_.,-=+:;!1?acbT02E5GB$W#@M"
 #define ASCII_more "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
+#define ASCII_more_reverse " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+
+#define ANSI_f_start "\x1b[38;2;"
+#define ANSI_b_start "\x1b[48;2;"
+#define ANSI_end "\x1b[0m"
 
 
 // argparse info
 //
 int ascii_value;
-int file_option = 0;
-const char *argparse_version = "Version 0.0.2 (16.02.2022)";
+int file_option = false;       // TRUE --> save to file
+int color_option = 0;          // 0    --> none; 1 --> foreground; 2 --> background; 3 --> both
+bool invert_option = false;    // TRUE --> inverse
+const char *argparse_version = "Version 0.0.4 (21.02.2022)";
 static char doc[] = "Image to Ascii convertor made in C.\n    ---> https://github.com/tucnakomet1/i2a\n    ---> tucnakomet@gmail.com";
 
 
@@ -61,7 +70,6 @@ Image loadImage(const char *file_path) {
         resolution.data = malloc(height * sizeof(int*));
 
         unsigned char * resized_data = malloc(3 * sizeof(unsigned char) * window_width * window_height);
-
         int r = stbir_resize_uint8(data, width, height, 0, resized_data, window_width, window_height, 0, 3);
 
         if (r == 0) { perror("Resizing Error:"); }
@@ -94,16 +102,13 @@ Image loadImage(const char *file_path) {
 // counting average of RGB
 //
 int count_average(int r, int g, int b) {
-    double simple_avg = (r + g + b)/3;
+    double simple_avg = sqrt((r*r + g*g + b*b)/3);
     int ascii_list_size;
 
-    if (ascii_value == 0) {
-        ascii_list_size = sizeof(ASCII) - 2;
-    } else if (ascii_value == 1) {
-        ascii_list_size = sizeof(ASCII_less) - 2;
-    } else {
-        ascii_list_size = sizeof(ASCII_more) - 2;
-    }
+    if (ascii_value == 0) { ascii_list_size = sizeof(ASCII) - 2; }
+    else if (ascii_value == 1) { ascii_list_size = sizeof(ASCII_less) - 2; }
+    else { ascii_list_size = sizeof(ASCII_more) - 2; }
+    
     double rgb_piece = 255.0 / ascii_list_size;
     int avg = round(simple_avg / (float)rgb_piece);
 
@@ -120,12 +125,10 @@ int load(const char *file) {
     w = img.width;
     h = img.height;
 
-    //printf("\nW:%d, H:%d\n", w, h); //
-
     if (w == 0) { return -1; }
 
     FILE *fp;
-    if (file_option == 1) { fp = fopen("i2a.txt", "w+"); }
+    if (file_option) { fp = fopen("i2a.txt", "w+"); }
 
     for (int i = 0; i < h; i++) {
         for (int j = 0; j < w*3; j+=3){
@@ -134,27 +137,28 @@ int load(const char *file) {
             int g = img.data[i][j+1];
             int b = img.data[i][j+2];
             
-            //printf("\ntry: R: %d, G: %d, B: %d\n", r, g, b); //
-
             int avg = count_average(r, g, b);
             int ascii_char;
+            
+            // ASCII identification
+            if (ascii_value == 0) { if (invert_option){ ascii_char = ASCII_reverse[avg]; } else { ascii_char = ASCII[avg]; }}
+            else if (ascii_value == 1) { if (invert_option) { ascii_char = ASCII_less_reverse[avg]; } else { ascii_char = ASCII_less[avg]; }} 
+            else { if (invert_option) { ascii_char = ASCII_more_reverse[avg]; } else { ascii_char = ASCII_more[avg]; }}
 
-            if (ascii_value == 0) {
-                ascii_char = ASCII[avg];
-            } else if (ascii_value == 1) {
-                ascii_char = ASCII_less[avg];
-            } else {
-                ascii_char = ASCII_more[avg];
-            }
-
-            printf("%c%c", ascii_char, ascii_char);
-            if (file_option == 1) { fprintf(fp, "%c%c", ascii_char, ascii_char); }
+            // ANSI identification
+            if (color_option == 0) { printf("%c%c", ascii_char, ascii_char); }
+            else if (color_option == 1) { printf("%s%d;%d;%dm%c%c%s", ANSI_f_start, r, g, b, ascii_char, ascii_char, ANSI_end); }
+            else if (color_option == 2) { printf("%s%d;%d;%dm%c%c%s", ANSI_b_start, r, g, b, ascii_char, ascii_char, ANSI_end); }
+            else { printf("%s%d;%d;%dm%s%d;%d;%dm%c%c%s", ANSI_b_start, r, g, b, ANSI_f_start, r, g, b, ascii_char, ascii_char, ANSI_end); }
+            
+            // write to file
+            if (file_option) { fprintf(fp, "%c%c", ascii_char, ascii_char); }
 
         }
         printf("\r\n");
-        if (file_option == 1) { fprintf(fp, "\r\n"); }
+        if (file_option) { fprintf(fp, "\r\n"); }
     }
-    if (file_option == 1) { fclose(fp); }
+    if (file_option) { fclose(fp); }
 
     return 0;
 }
@@ -183,30 +187,32 @@ int main(int argc, const char **argv) {
             if ((strcmp(argv[i], "-v") == 0) || (strcmp(argv[i], "--version") == 0)&& (i == 1)) {
                 printf("%s\n", argparse_version);
                 return -1;
-            }
-            if ((strcmp(argv[i], "-a") == 0) || (strcmp(argv[i], "--about") == 0) && (i == 1)) {
+            } if ((strcmp(argv[i], "-a") == 0) || (strcmp(argv[i], "--about") == 0) && (i == 1)) {
                 printf("\n%s\n\n%s\n", argparse_version, doc);
                 return -1;
-            }
-            if ((strcmp(argv[i], "-h") == 0) || (strcmp(argv[i], "--help") == 0) && (i == 1)) {
-                printf("\nusage: i2a [file] [-h] [-v] [-a] [-f] [-l] [-m]\n");
+            } if ((strcmp(argv[i], "-h") == 0) || (strcmp(argv[i], "--help") == 0) && (i == 1)) {
+                printf("\nusage: i2a [file] [-h] [-v] [-a] [-f] [-l] [-m] [-c] [-C] [-Cc] [-i]\n");
                 printf("\nrequired arguments:\n [file]  file path of your image\n");
-                printf("\noptional arguments:\n  -h, --help     show this help message and exit\n  -v, --version  show current version\n  -a, --about    show about page\n  -f, --file     Save result into the file.\n  -l, --less     Use ASCII list with less characters -> higher contrast.\n  -m , --more    Use ASCII list with more characters -> better quality, worse contrast.\n");
+                printf("\noptional arguments:\n  -h,  --help\t\tshow this help message and exit\n  -v,  --version\t\tshow current version\n  -a,  --about\t\tshow about page\n  -f,  --file\t\tSave result into the file.\n  -l,  --less\t\tUse ASCII list with less characters -> higher contrast.\n  -m,  --more\t\tUse ASCII list with more characters -> better quality, worse contrast.\n  -c,  --foreground\tadd foreground ANSI color to image\n  -C,  --background\tadd background ANSi color to image\n  -Cc, --color\t\tAdd foreground and background ANSI color to image\n  -i,  --invert\t\tinvert colors\n");
                 printf("\n<https://github.com/tucnakomet1/i2a>\n");
                 return -1;
-            }
-            if ((i == 1) && (reg_val == 0)) {
+            } if ((i == 1) && (reg_val == 0)) {
                 ascii_value = 0;
                 file = argv[i];
-            }
-            if ((strcmp(argv[i], "-l") == 0) || (strcmp(argv[i], "--low") == 0) && (i > 1)) {
+            } if ((strcmp(argv[i], "-l") == 0) || (strcmp(argv[i], "--low") == 0) && (i > 1)) {
                 ascii_value = 1;
-            }
-            if ((strcmp(argv[i], "-m") == 0) || (strcmp(argv[i], "--more") == 0) && (i > 1)) {
+            } if ((strcmp(argv[i], "-m") == 0) || (strcmp(argv[i], "--more") == 0) && (i > 1)) {
                 ascii_value = 2;
-            }
-            if ((strcmp(argv[i], "-f") == 0) || (strcmp(argv[i], "--file") == 0) && (i > 1)) {
-                file_option = 1;
+            } if ((strcmp(argv[i], "-f") == 0) || (strcmp(argv[i], "--file") == 0) && (i > 1)) {
+                file_option = true;
+            } if ((strcmp(argv[i], "-c") == 0) || (strcmp(argv[i], "--foreground") == 0) && (i > 1)) {
+                color_option = 1;
+            } if ((strcmp(argv[i], "-C") == 0) || (strcmp(argv[i], "--background") == 0) && (i > 1)) {
+                color_option = 2;
+            } if ((strcmp(argv[i], "-Cc") == 0) || (strcmp(argv[i], "--color") == 0) && (i > 1)) {
+                color_option = 3;
+            } if ((strcmp(argv[i], "-i") == 0) || (strcmp(argv[i], "--invert") == 0) && (i > 1)) {
+                invert_option = true;
             }
         }
     }
@@ -226,8 +232,7 @@ int main(int argc, const char **argv) {
 
 
 /* TODO:
- * - png support
- * - bmp support
+ * - png fix
  * - gif support
  * - video support
  */

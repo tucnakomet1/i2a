@@ -9,10 +9,10 @@
 ## Installation
 ```bash
 # download package from github
-wget -c https://github.com/tucnakomet1/i2a/archive/refs/tags/0.0.3.tar.gz -O i2a-v0.0.3.tar.gz
+wget -c https://github.com/tucnakomet1/i2a/archive/refs/tags/0.0.4.tar.gz -O i2a-v0.0.4.tar.gz
 
 # extract tarball & go to the directory
-tar -xvzf i2a-v0.0.3.tar.gz && cd i2a-0.0.3
+tar -xvzf i2a-v0.0.4.tar.gz && cd i2a-0.0.4
 
 # install package
 make && sudo cp i2a /usr/local/bin/
@@ -23,18 +23,23 @@ make && sudo cp i2a /usr/local/bin/
 ## Usage
 
 ```
-usage: i2a [file] [-h] [-v] [-a] [-f] [-l] [-m]
+usage: i2a [file] [-h] [-v] [-a] [-f] [-l] [-m] [-c] [-C] [-Cc] [-i]
 
 required arguments:
  [file]  file path of your image
 
 optional arguments:
-  -h, --help     show this help message and exit
-  -v, --version  show current version
-  -a, --about    show about page
-  -f, --file     Save result into the file.
-  -l, --less     Use ASCII list with less characters -> higher contrast.
-  -m , --more    Use ASCII list with more characters -> better quality, worse contrast.
+  -h,  --help		show this help message and exit
+  -v,  --version		show current version
+  -a,  --about		show about page
+  -f,  --file		Save result into the file.
+  -l,  --less		Use ASCII list with less characters -> higher contrast.
+  -m,  --more		Use ASCII list with more characters -> better quality, worse contrast.
+  -c,  --foreground	add foreground ANSI color to image
+  -C,  --background	add background ANSi color to image
+  -Cc, --color		Add foreground and background ANSI color to image
+  -i,  --invert		invert colors
+
 ```
 
 
@@ -45,11 +50,9 @@ optional arguments:
 
 
 
-| Original                                     | Ascii                                            |
-| -------------------------------------------- | ------------------------------------------------ |
-| ![gandalf original](images/gandalf_pink.jpg) | ![gandalf converted](images/gandalf.png)         |
-| ![github original](images/github.jpg)        | ![github comverted](images/github_converted.png) |
-
+| Original | Ascii | Inverted | Color fg | Color bg | Color fg + bg |
+| -------- | ----- | -------- | -------- | -------- | ------------- |
+| ![original_img](images/gandalf_origin.png) | ![ascii_img](images/gandalf_ascii.png) | ![inverted_img](images/gandalf_inverted.png) | ![color_fg_img](images/gandalf_color.png)| ![color_bg_img](images/gandalf_bg.png) | ![color_gf_bg_img](images/gandalf_cc.png) |
 
 
 ## TODO
@@ -64,7 +67,7 @@ optional arguments:
 - [x] save to file
 - [x] add argparse
 - [x] ASCII list selection
-- [ ] add colors
+- [x] add colors support
 - [ ] make code readable :(
 
   
